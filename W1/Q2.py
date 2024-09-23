@@ -16,7 +16,7 @@ def hex_summary(str):
             return sum + hex_summary(striped_str)
     return sum
 
-def int_to_base(base, num):
+def decimal_to_base(base, num):
     left_over = num
     result = ""
     while left_over != 0:
@@ -26,5 +26,5 @@ def int_to_base(base, num):
 
 result = hex_summary("ABRAKADABRA")
 print(result)
-print(int_to_base(8, result))
-print(int_to_base(2, result))
+print(decimal_to_base(8, result))
+print(decimal_to_base(2, result))
