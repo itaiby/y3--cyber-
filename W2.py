@@ -22,14 +22,15 @@ def translate_morse(text):
         return morse[text]
 
 def count_symbols(file_path):
+    text = morse_file(file_path)
+    if text == "Error in Morse Code":
+        return text
     symbols = {}
-    with open(file_path, 'r') as file:
-        for chr in file.read():
-            if chr != " ":
-                if chr in symbols:
-                    symbols[chr] += 1
-                else:
-                    symbols[chr] = 1
+    for chr in text.replace(" ",""):
+        if chr in symbols:
+            symbols[chr] += 1
+        else:
+            symbols[chr] = 1
     return dict(sorted(symbols.items(), key=lambda item: item[1], reverse=True))
 
 def print_count(symbols):
