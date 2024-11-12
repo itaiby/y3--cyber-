@@ -41,9 +41,3 @@ def next_move(array, row, col, direction):
             else:
                 array[try_row][try_col] = "■"
             return try_row, try_col, try_direction
-
-
-
-
-
-print(maze_solve("maze.txt"))
