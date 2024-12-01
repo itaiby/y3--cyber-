@@ -1,78 +1,84 @@
 def rotate(image, degrees):
-    result = ""
-    if degrees == 0:
-        result = image
-    elif degrees == 90:
-        length = len(image.splitlines()[0])
-        for i in range(length):
-            for j in range(len(image.splitlines())-1,-1,-1):
-                result += image[j*(length+1)+i]
-            result += "\n"
-    elif degrees == 180:
-        result = image[::-1]
-    elif degrees == 270:
-        result = rotate(image[::-1],90)
-    elif degrees == 360:
+    result = []
+    if degrees == 360:
         for line in image.splitlines():
-            result += line[::-1] + "\n"
-    return result
+            mirror_line = ""
+            for char in line[::-1]:
+                if char == "(":
+                    mirror_line += ")"
+                elif char == ")":
+                    mirror_line += "("
+                else:
+                    mirror_line += char
+            result.append(mirror_line)
+        return '\n'.join(result)
 
-def convert(image, convertion_table, conv_choice):
+    elif degrees == 0:
+        return image
+
+    for row in zip(*(image.splitlines()[::-1])):
+        result.append(''.join(row))
+    return rotate('\n'.join(result), degrees - 90)
+
+def convert(image, conversion_table, conv_choice):
     result = ""
+    if conv_choice == 0:
+        return image
     for char in image:
-        if char in [conv[0] for conv in convertion_table]:
-            result += [conv[conv_choice] for conv in convertion_table if conv[0] == char][0]
-        elif char == "\n":
+        if char == "\n":
             result += char
-        else:
+        in_table = False
+        for conv in conversion_table:
+            if conv[0] == char:
+                result += conv[conv_choice]
+                in_table = True
+                break
+        if not in_table:
             result += "X"
     return result
 
 def serialize(string, rotation, conv_choice, conversion_table, to_print=False):
-    with open(string, "r") as file:
-        rotated_and_converted = convert(rotate(file.read(), rotation), conversion_table, conv_choice)
-        last = rotated_and_converted[0]
-        i = 1
-        result = ""
-        for char in rotated_and_converted[1:]:
-            if char == last:
-                i += 1
-            else:
-                result += str(i) + last
-                last = char
-                i = 1
-        if to_print:
-            return result
+    string = convert(rotate(string,rotation),conversion_table, conv_choice)
+    last = string[0]
+    count = 1
+    result = ""
+    for char in string[1:]:
+        if char == "\n":
+            result += char
+        elif char == last:
+            count += 1
         else:
-            with open(string[0:string.find(".")]+"-output.txt", "w") as output:
-                output.write(result)
-                return output.name
+            result += f"{count}{last}"
+            last = char
+            count = 1
+    result += f"{count}{last}"
+
+    if to_print:
+        return result
+    else:
+        with open("output.txt", "w") as output:
+            output.write(result)
+            return output.name
 
 def deserialize(string, rotation, conv_choice, conversion_table, to_print=False):
-    with open(string, "r") as file:
-        deserialized = ""
-        num = ""
-        for char in file.read():
-            if char.isdigit():
-                num += char
-            else:
-                deserialized += int(num) * char
-                num = ""
-        if rotation != 360 and rotation != 0:
-            rotation = 360-rotation
-        for i in range(len(conversion_table)):
-            conversion_table[i] = conversion_table[i][::-1]
-        result = convert(rotate(deserialized, rotation), conversion_table, conv_choice)
-        if to_print:
-            return result
+    num = ""
+    result = ""
+    for char in string:
+        if char.isdigit():
+            num += char
         else:
-            with open(string[0:string.find(".")]+"-output.txt", "w") as output:
-                output.write(result)
-                return output.name
+            result += int(num) * char
+            num = ""
 
+    if rotation in [90,270]:
+        rotation = 360-rotation
 
+    reversed_conversion_table = [conv[::-1] for conv in conversion_table]
+    result = convert(rotate(result, rotation), reversed_conversion_table, conv_choice)
 
-#print(rotate("$$$$$***   ....\n&&&&&(,,/  ##))\n**   ****./,///", 180))
-#print(convert("$$$$$***   ....\n&&&&&(,,/  ##))\n**   ****./,///",["(^$","$;!","*|#"],1))
-#print(serialize("h.txt", 270, 2, ["h^$","f;!","w|#"],False))
-#print(deserialize("h-output.txt", 270, 2, ["h^$","f;!","w|#"],True))
+    if to_print:
+        return result
+    else:
+        with open("output.txt", "w") as output:
+            output.write(result)
+            return output.name
